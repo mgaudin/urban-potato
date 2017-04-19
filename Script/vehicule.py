@@ -148,7 +148,19 @@ class Vehicule(object):
                         liste_voitures_voie_initiale.pop(i)
                 liste_voiture_voie_voulue.append(self)
 
-                
+    def tester_environnement(self, dict_voie):
+        """
+        Methode permettant de tester si le vehicule est trop proche du vehicule
+        qu'il suit (et qu'un depassement ou un ralentissement est necessaire).
+        
+        :param dict_voie: dictionnaire des voies
+        :return: True si le vehicule est trop proche du vehicule qu'il suit, 
+                 False sinon.
+        :rtype: booleen
+        """
+        #HYP 
+        pass
+          
     def regarder_limitation(self):
         """
         methode calculant la limite a laquelle la voiture est prete a rouler,
