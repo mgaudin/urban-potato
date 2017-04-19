@@ -11,10 +11,12 @@ class Voie(object):
         self.liste_voiture = []
         self.limite = 110
         
+    def __str__(self):
+        return "id = {}\nliste_voiture = {}\nlimite = {}".format(self.id, self.liste_voiture, self.limite)
+    
 class Sortie(Voie):
-    def __init__(self, id_voie, limites):
+    def __init__(self, id_voie, limite):
         Voie.__init__(self, id_voie)
         self.id = -1
-        self.limites = limites
-        
-        
+        self.limite = limite
+    
