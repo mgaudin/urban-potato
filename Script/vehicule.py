@@ -31,6 +31,10 @@ class Vehicule(object):
     @property
     def position(self):
         return self._position
+    
+    @property
+    def vitesse(self):
+        return self._vitesse
         
     def maj_position(self, pas = 0.5):
         #vitesse en m/s
@@ -40,24 +44,41 @@ class Vehicule(object):
         self._position += avance
 
 #COMPORTEMENT SELON TYPE VEHICULE ?        
-    def ralentir(self, vitesse_cible, position_cible, pas = 0.5):
+    def ralentir(self):
         """
         /!\ ALERT /!\ : LA VOITURE ET LA CIBLE DOIVENT ETRE SUR LE MEME TRONCON
         """
+        #on considère tous les vehicules sur la même voie
+        liste_voitures = d.dict_voie[self._voie].liste_voiture
+        
+        i=0                           
+        dist_min = liste_voitures[0].position - self._position
+        while dist_min < 0:
+            i = i+1
+            dist_min = liste_voitures[i].position - self._position
+        for vehicule in liste_voitures:
+            distance = vehicule.position - self._position
+            if distance < dist_min and distance > 0:
+                dist_min = distance
+                vehicule_devant = vehicule
+            
+            
+        vitesse_cible = vehicule_devant.vitesse
+        
         #differentiel de vitesse
         dvitesse = self._vitesse - vitesse_cible
         
         #s'il faut ralentir
         if dvitesse > 0:
-            distance = position_cible - self._position
-            temps = distance / dvitesse
-            nouvelle_vitesse = ((vitesse_cible - self._vitesse) / temps) * pas\
+            #temps = dist_min / dvitesse
+            temps = dist_min / self._vitesse
+            nouvelle_vitesse = ((vitesse_cible - self._vitesse) / temps) * d.pas\
                                + self._vitesse
             
             self._vitesse = nouvelle_vitesse
 
-#COMPORTEMENT SELON TYPE CONDUCTEUR ?          
-    def accelerer(self, pas = 0.5):
+         
+    def accelerer(self):
         """
         """
         #limite a laquelle la voiture est prete a rouler, en fonction de la 
@@ -66,13 +87,15 @@ class Vehicule(object):
         limite = p.COEF_VITESSE_CONDUCTEUR[self._type_conducteur] \
                                           * d.vitesse_limite
         
-        dvitesse = self._vitesse - limite
+        dvitesse = limite - self._vitesse
         
         #HYP : accélération de 2km/h par seconde
-        if dvitesse < 0:
-            nouvelle_vitesse = self._vitesse + (2/3.6)*pas
-            self._vitesse = nouvelle_vitesse
-                                               
+        if dvitesse >= (2/3.6)*d.pas:
+            nouvelle_vitesse  = self._vitesse + (2/3.6)*d.pas
+        if dvitesse < (2/3.6)*d.pas:  #and dvitesse > 0
+            nouvelle_vitesse  = limite
+                
+        self._vitesse = nouvelle_vitesse                               
     
     def depasser(self):
         """
@@ -122,7 +145,7 @@ class Vehicule(object):
         return depasse
     
               
-#REGARDER DEVANT    
+
     def serrer_droite(self):
         """
         Methode testant si la voiture a la place de se rabattre a droite, et si
