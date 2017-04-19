@@ -4,6 +4,8 @@ Created on Wed Mar 29 16:03:53 2017
 
 @author: Alice
 """
+import parametre as p
+import data as d
 
 class Vehicule(object):
     def __init__(self, nom, type_conducteur, vitesse, prend_la_sortie, voie,\
@@ -33,9 +35,9 @@ class Vehicule(object):
     def maj_position(self, pas = 0.5):
         #vitesse en m/s
         vitesse = self._vitesse/3.6
-        #unite de temps = 0.5 s
+        #unite de temps = 0.5 s par defaut
         avance = vitesse * pas
-        self._position += int(avance)
+        self._position += avance
 
 #COMPORTEMENT SELON TYPE VEHICULE ?        
     def ralentir(self, vitesse_cible, position_cible, pas = 0.5):
@@ -55,10 +57,15 @@ class Vehicule(object):
             self._vitesse = nouvelle_vitesse
 
 #COMPORTEMENT SELON TYPE CONDUCTEUR ?          
-    def accelerer(self, limite, pas = 0.5):
+    def accelerer(self, pas = 0.5):
         """
-        :param limite: limite conducteur
         """
+        #limite a laquelle la voiture est prete a rouler, en fonction de la 
+        #limitation de vitesse de l'autoroute du modele vitesse_limite et du 
+        #type de conducteur
+        limite = p.COEF_VITESSE_CONDUCTEUR[self._type_conducteur] \
+                                          * d.vitesse_limite
+        
         dvitesse = self._vitesse - limite
         
         #HYP : accélération de 2km/h par seconde
@@ -67,7 +74,7 @@ class Vehicule(object):
             self._vitesse = nouvelle_vitesse
                                                
     
-    def depasser(self, dict_voie):
+    def depasser(self):
         """
         Methode permettant de tester si le depassement est possible, et si oui,
         change la voiture de voie.
@@ -75,98 +82,110 @@ class Vehicule(object):
         concernees par le depassement.
         Le methode renvoie un booleen indiquant si le depassement s'est fait.
         
-        :param dict_voie: dictionnaire des voies du modele
+
         :return: True si le depassement s'est fait, False sinon
         :rtype: booleen
         """
         depasse = False
         #s'il n'est ni sur la sortie, ni sur la voie de gauche
-        if self._voie.id != -1 and self._voie.id != nb_voies - 1:
+        if self._voie.id != -1 and self._voie.id != d.nb_voies - 1:
             
             #s'il n'y a pas de voiture
-            #HYP : 60m libre derrière sur la voie de gauche
-            position_limite = self._position - 60
-            if position_limite <0:
-                position_limite = 0
+            #HYP 0.6*vitesse_limite*coef
+            distance_securite = 0.6 * d.vitesse_limite \
+                                * p.COEF_DIST_CONDUCTEUR[self._type_conducteur]
+                                
+            position_limite_arriere = self._position - distance_securite
+            position_limite_avant = self._position + distance_securite
             
             voie_voulue = self._voie + 1
             
             libre = True
-            liste_voitures_voie_voulue = dict_voie[voie_voulue].liste_voiture
+            liste_voitures_voie_voulue = d.dict_voie[voie_voulue].liste_voiture
             for vehicule in liste_voitures_voie_voulue:
-                occupe = vehicule.position > position_limite and \
-                vehicule.position < self._position
+                occupe = (vehicule.position > position_limite_arriere and \
+                          vehicule.position < self._position) or \
+                          (vehicule.position < position_limite_avant and \
+                          vehicule.position > self._position)
                 if occupe :
                     libre = not(occupe)
             
             if libre:
-                liste_voitures_voie_initiale = dict_voie[self._voie].liste_voiture
+                liste_voitures_voie_initiale = d.dict_voie[self._voie].liste_voiture
                 self._voie += 1
                 for i in range(liste_voitures_voie_initiale):
                     if liste_voitures_voie_initiale[i].nom == self._nom:
                         liste_voitures_voie_initiale.pop(i)
-                liste_voiture_voie_voulue.append(self)
+                liste_voitures_voie_voulue.append(self)
                 depasse = True
                 
         return depasse
     
               
-    
-    def serrer_droite(self, dict_voie):
+#REGARDER DEVANT    
+    def serrer_droite(self):
         """
         Methode testant si la voiture a la place de se rabattre a droite, et si
         oui, la change de voie.
         La methode modifie la voie de la voiture, et la liste de voitures des 
         voies concernees, et ne renvoie rien.
-        
-        :param dict_voie: dictionnaire des voies du modele
         """
         #s'il n'est ni sur la sortie, ni sur la voie de droite
         if self._voie.id != -1 and self._voie.id != 0:
             
             #s'il n'y a pas de voiture
-            #HYP : 60m libre derrière sur la voie de droite
-            position_limite = self._position - 60
-            if position_limite <0:
-                position_limite = 0
+            #HYP 0.6*vitesse_limite*coef
+            distance_securite = 0.6 * d.vitesse_limite \
+                                * p.COEF_DIST_CONDUCTEUR[self._type_conducteur]
+                                
+            position_limite_arriere = self._position - distance_securite
+            position_limite_avant = self._position + distance_securite
             
             voie_voulue = self._voie - 1
             
             libre = True
-            liste_voitures_voie_voulue = dict_voie[voie_voulue].liste_voiture:
+            liste_voitures_voie_voulue = d.dict_voie[voie_voulue].liste_voiture
             for vehicule in liste_voitures_voie_voulue:
-                occupe = vehicule.position > position_limite and \
-                vehicule.position < self._position
+                occupe = (vehicule.position > position_limite_arriere and \
+                          vehicule.position < self._position) or \
+                          (vehicule.position < position_limite_avant and \
+                          vehicule.position > self._position)
                 if occupe :
                     libre = not(occupe)
                     
             if libre:
-                liste_voitures_voie_initiale = dict_voie[self._voie].liste_voiture
+                liste_voitures_voie_initiale = d.dict_voie[self._voie].liste_voiture
                 self._voie -= 1
                 for i in range(liste_voitures_voie_initiale):
-                    if liste_voitures_voie_initiale[i].nom = self._nom:
+                    if liste_voitures_voie_initiale[i].nom == self._nom:
                         liste_voitures_voie_initiale.pop(i)
-                liste_voiture_voie_voulue.append(self)
+                liste_voitures_voie_voulue.append(self)
 
-    def tester_environnement(self, dict_voie):
+    def tester_environnement(self):
         """
         Methode permettant de tester si le vehicule est trop proche du vehicule
         qu'il suit (et qu'un depassement ou un ralentissement est necessaire).
         
-        :param dict_voie: dictionnaire des voies
         :return: True si le vehicule est trop proche du vehicule qu'il suit, 
                  False sinon.
         :rtype: booleen
         """
-        #HYP 
-        pass
-          
-    def regarder_limitation(self):
-        """
-        methode calculant la limite a laquelle la voiture est prete a rouler,
-        en fonction de la limitation de vitesse de l'autoroute du modele 
-        vitesse_max et du type de conducteur (cf BDD)
-        renvoie limite (utile dans methode accelerer)
-        """
-        pass
+        #HYP dict
+        
+        voiture_proche = False
+        
+        #on considère tous les vehicules sur la même voie
+        liste_voitures = d.dict_voie[self._voie].liste_voiture
+                         
+        #pour chaque vehicule                        
+        for vehicule in liste_voitures :
+            #si la distance au vehicule est inferieure a 70
+            if vehicule.position - self._position < (0.6 * d.vitesse_limite \
+                * p.COEF_DIST_CONDUCTEUR[self._type_conducteur]) \
+                and vehicule.position - self._position > 0:
+                #le vehicule est (strictement) devant lui  
+                voiture_proche = True
+                
+        return voiture_proche
+                                                  
             

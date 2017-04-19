@@ -13,7 +13,7 @@ COEF_VITESSE_CONDUCTEUR = {'Prudent': 0.8, 'Normal': 1, 'Chauffard': 1.1}
 
 
 PART_VEHICULE = ((('Camion', 0.16), ('Voiture', 0.68), ('Moto', 0.05), ('Poney', 0.01))
-                 (('Camion', 0.2), ('Voiture', 0.7),('Moto', 0.09), ('Poney', 0.01))
+                 (('Camion', 0.2), ('Voiture', 0.7),('Moto', 0.09), ('Poney', 0.01)))
 
 PART_CONDUCT = ((('Prudent', 0.08), ('Normal', 0.87), ('Chauffard', 0.05))
                 (('Prudent', 0.1), ('Normal', 0.8), ('Chauffard', 0.1)))
