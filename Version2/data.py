@@ -12,3 +12,7 @@ nb_voies = 3
 ville = 2
 
 pas = 0.5
+
+nb_vehicules_voulu = 20
+
+debit = 1

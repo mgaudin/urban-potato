@@ -180,7 +180,7 @@ class Vehicule(object):
             if libre:
                 liste_voitures_voie_initiale = self._voie.liste_voiture
                 self._voie = self._voie.voie_droite
-                for i in range(liste_voitures_voie_initiale):
+                for i in range(len(liste_voitures_voie_initiale)):
                     if liste_voitures_voie_initiale[i].nom == self._nom:
                         liste_voitures_voie_initiale.pop(i)
                 liste_voitures_voie_voulue.append(self)
