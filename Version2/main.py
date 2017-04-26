@@ -16,6 +16,7 @@ create_lane.creer_voies(d.nb_voies)
 
 liste_voitures_circul = []
 compteur_vehicules = 0
+temps = 0
 
 while len(liste_voitures_circul) != 0 and compteur_vehicules != d.nb_vehicules_voulu:
     cree = creer_voiture(compteur_vehicules)
@@ -38,6 +39,7 @@ while len(liste_voitures_circul) != 0 and compteur_vehicules != d.nb_vehicules_v
             liste_voitures_circul.remove(vehi)
             del vehi
                   
+    temps += d.pas
     
     enregistrer_graphe()
         
