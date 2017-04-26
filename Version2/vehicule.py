@@ -4,7 +4,7 @@ Created on Wed Mar 29 16:03:53 2017
 
 @author: Alice
 """
-import parametre as p
+
 import data as d
 
 class Vehicule(object):
@@ -19,11 +19,16 @@ class Vehicule(object):
         self._prend_la_sortie = prend_la_sortie
         #en m
         self._position = 0
+        #objet voie
         self._voie = voie
     
     @property
     def nom(self):
         return self._nom
+    
+    @property
+    def conducteur(self):
+        return self._conducteur
     
     @property
     def position(self):
@@ -32,6 +37,10 @@ class Vehicule(object):
     @property
     def vitesse(self):
         return self._vitesse
+    
+    @property
+    def voie(self):
+        return self._voie
         
     def maj_position(self):
         #vitesse en m/s
@@ -46,7 +55,7 @@ class Vehicule(object):
         /!\ ALERT /!\ : LA VOITURE ET LA CIBLE DOIVENT ETRE SUR LE MEME TRONCON
         """
         #on considère tous les vehicules sur la même voie
-        liste_voitures = d.dict_voie[self._voie].liste_voiture
+        liste_voitures = self._voie.liste_voiture
         
         i=0                           
         dist_min = liste_voitures[0].position - self._position
@@ -117,10 +126,8 @@ class Vehicule(object):
             position_limite_arriere = self._position - distance_securite
             position_limite_avant = self._position + distance_securite
             
-            voie_voulue = self._voie + 1
-            
             libre = True
-            liste_voitures_voie_voulue = d.dict_voie[voie_voulue].liste_voiture
+            liste_voitures_voie_voulue = self._voie.voie_gauche.liste_voiture
             for vehicule in liste_voitures_voie_voulue:
                 occupe = (vehicule.position > position_limite_arriere and \
                           vehicule.position < self._position) or \
@@ -130,8 +137,8 @@ class Vehicule(object):
                     libre = not(occupe)
             
             if libre:
-                liste_voitures_voie_initiale = d.dict_voie[self._voie].liste_voiture
-                self._voie += 1
+                liste_voitures_voie_initiale = self._voie.liste_voiture
+                self._voie = self._voie.voie_gauche
                 for i in range(liste_voitures_voie_initiale):
                     if liste_voitures_voie_initiale[i].nom == self._nom:
                         liste_voitures_voie_initiale.pop(i)
@@ -160,10 +167,8 @@ class Vehicule(object):
             position_limite_arriere = self._position - distance_securite
             position_limite_avant = self._position + distance_securite
             
-            voie_voulue = self._voie - 1
-            
             libre = True
-            liste_voitures_voie_voulue = d.dict_voie[voie_voulue].liste_voiture
+            liste_voitures_voie_voulue = self._voie.voie_droite.liste_voiture
             for vehicule in liste_voitures_voie_voulue:
                 occupe = (vehicule.position > position_limite_arriere and \
                           vehicule.position < self._position) or \
@@ -173,8 +178,8 @@ class Vehicule(object):
                     libre = not(occupe)
                     
             if libre:
-                liste_voitures_voie_initiale = d.dict_voie[self._voie].liste_voiture
-                self._voie -= 1
+                liste_voitures_voie_initiale = self._voie.liste_voiture
+                self._voie = self._voie.voie_droite
                 for i in range(liste_voitures_voie_initiale):
                     if liste_voitures_voie_initiale[i].nom == self._nom:
                         liste_voitures_voie_initiale.pop(i)
@@ -194,13 +199,13 @@ class Vehicule(object):
         voiture_proche = False
         
         #on considère tous les vehicules sur la même voie
-        liste_voitures = d.dict_voie[self._voie].liste_voiture
+        liste_voitures = self._voie.liste_voiture
                          
         #pour chaque vehicule                        
         for vehicule in liste_voitures :
             #si la distance au vehicule est inferieure a 70
             if vehicule.position - self._position < (0.6 * d.vitesse_limite \
-                * self._conducteur.coef_distance \
+                * self._conducteur.coef_distance) \
                 and vehicule.position - self._position > 0:
                 #le vehicule est (strictement) devant lui  
                 voiture_proche = True

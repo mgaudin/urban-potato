@@ -9,6 +9,8 @@ from random import *
 import vehicule as v
 import data as d
 import parametre as p
+import conducteur as c
+import voie
 
 compteur_vehicules = 0
 ville = d.ville
@@ -29,16 +31,16 @@ if create == True:
     while alea > proba_cumul:
         proba_cumul += p.PART_CONDUCT[ville][i][1]
         i +=1
-    type_conducteur = p.PART_CONDUCT[ville][i][0]
+    conducteur = p.PART_CONDUCT[ville][i-1][0]
     
     #vitesse
-    vitesse = d.vitesse_limite * p.COEF_VITESSE_CONDUCTEUR[type_conducteur]
+    vitesse = d.vitesse_limite * conducteur.coef_vitesse
     
     #prend_la_sortie
     prend_la_sortie = randint(0,1)
     
     #voie
-    voie = randint(0, d.nb_voies)
+    voie_vehi = voie.Voie(randint(0, d.nb_voies))
     
     #type_vehicule
     alea = random()
@@ -47,10 +49,10 @@ if create == True:
     while alea > proba_cumul:
         proba_cumul += p.PART_VEHICULE[ville][i][1]
         i +=1
-    type_vehicule = p.PART_VEHICULE[ville][i][0] 
+    
     
     #On cree le vehicule
-    vehicule = v.Vehicule(nom, type_conducteur, vitesse, prend_la_sortie, voie, type_vehicule)
+    vehi = p.PART_VEHICULE[ville][i-1][0](nom, conducteur, vitesse, prend_la_sortie, voie_vehi)
     
     #On incremente le compteur de vehicule
     compteur_vehicules += 1

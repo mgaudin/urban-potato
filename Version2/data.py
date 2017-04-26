@@ -9,4 +9,6 @@ vitesse_limite = 110
 
 nb_voies = 3
 
-ville = 1
+ville = 2
+
+pas = 0.5
