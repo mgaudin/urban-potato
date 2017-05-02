@@ -28,10 +28,11 @@ while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicul
     
     
     for vehi in liste_voitures_circul:
-#Quand prendre la sortie ?
-        vehi.prendre_la_sortie()
-            
+        
         vehi.serrer_droite()
+        
+        vehi.prendre_la_sortie()
+        
         trop_proche = vehi.tester_environnement()
         if trop_proche:
             depassement_reussi = vehi.depasser()
@@ -51,7 +52,7 @@ while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicul
     instant += d.pas
     #print(instant)
     #print(compteur_vehicules)
-    graph.plot(liste_voitures_circul, instant)
+    #graph.plot(liste_voitures_circul, instant)
     #print(liste_voitures_circul)
         
 print('hors')
