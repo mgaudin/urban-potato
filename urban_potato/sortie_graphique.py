@@ -46,7 +46,7 @@ def plot_voitures(liste_voitures):
     for voiture in liste_voitures:
         liste_positions.append(voiture.position)
         liste_voies.append(voiture.voie)
-    plt.plot(liste_positions,[10 * elem.id + 5 for elem in liste_voies],'r>', markersize = 20)
+    plt.plot(liste_positions,[10 * elem.id_voie + 5 for elem in liste_voies],'r>', markersize = 20)
     plt.axis([0, 1200, -20, 50])
 
 def plot(liste_voitures, instant):
@@ -65,4 +65,4 @@ def plot(liste_voitures, instant):
 
 if __name__ == '__main__':
     liste_voitures = []
-    plot(liste_voitures)
+    plot(liste_voitures, 0)

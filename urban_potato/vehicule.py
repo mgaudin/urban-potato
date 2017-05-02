@@ -12,7 +12,7 @@ class Vehicule(object):
         #entier unique
         self._nom = nom
         #objet conducteur (script conducteur)
-        self._conducteur = conducteur
+        self._type_conducteur = conducteur
         #en km/h
         self._vitesse = vitesse
         #booleen
@@ -55,15 +55,15 @@ class Vehicule(object):
         /!\ ALERT /!\ : LA VOITURE ET LA CIBLE DOIVENT ETRE SUR LE MEME TRONCON
         """
         #on considère tous les vehicules sur la même voie
-        liste_voitures = self._voie.liste_voiture
+        liste_vehicules = self._voie.liste_vehicules
         
         i=0                           
-        dist_min = liste_voitures[0].position - self._position
-        vehicule_devant = liste_voitures[0]
+        dist_min = liste_vehicules[0].position - self._position
+        vehicule_devant = liste_vehicules[0]
         while dist_min < 0:
             i = i+1
-            dist_min = liste_voitures[i].position - self._position
-        for vehicule in liste_voitures:
+            dist_min = liste_vehicules[i].position - self._position
+        for vehicule in liste_vehicules:
             distance = vehicule.position - self._position
             if distance < dist_min and distance > 0:
                 dist_min = distance
@@ -78,12 +78,17 @@ class Vehicule(object):
         #s'il faut ralentir
         if dvitesse > 0:
             #temps = dist_min / dvitesse
-            temps = dist_min / self._vitesse
-            nouvelle_vitesse = ((vitesse_cible - self._vitesse) / temps) * d.pas\
-                               + self._vitesse
+            temps = dist_min / (self._vitesse/3.6)
+            vit = self._vitesse
+            #num = (vitesse_cible - self._vitesse) / temps
+            nouvelle_vitesse = ((vitesse_cible - self._vitesse) / (3.6*temps)) * d.pas + self._vitesse/3.6
             
-            self._vitesse = nouvelle_vitesse
-
+            
+            self._vitesse = nouvelle_vitesse*3.6
+            if nouvelle_vitesse < 0:
+                print("vehi {}: vit {}; tps {}; dist_min {}; vit_init {}".format(self._nom, nouvelle_vitesse, temps, dist_min, vit))
+        
+        
          
     def accelerer(self):
         """
@@ -91,7 +96,7 @@ class Vehicule(object):
         #limite a laquelle la voiture est prete a rouler, en fonction de la 
         #limitation de vitesse de l'autoroute du modele vitesse_limite et du 
         #type de conducteur
-        limite = self._conducteur.coef_vitesse * d.vitesse_limite
+        limite = self._type_conducteur.coef_vitesse * d.vitesse_limite
         
         dvitesse = limite - self._vitesse
         
@@ -117,19 +122,19 @@ class Vehicule(object):
         """
         depasse = False
         #s'il n'est ni sur la sortie, ni sur la voie de gauche
-        if self._voie.id != -1 and self._voie.id != d.nb_voies - 1:
+        if self._voie.id_voie != -1 and self._voie.id_voie != d.nb_voies - 1:
             
             #s'il n'y a pas de voiture
             #HYP 0.6*vitesse_limite*coef
             distance_securite = 0.6 * d.vitesse_limite \
-                                * self._conducteur.coef_distance 
+                                * self._type_conducteur.coef_distance 
                                 
             position_limite_arriere = self._position - distance_securite
             position_limite_avant = self._position + distance_securite
             
             libre = True
-            liste_voitures_voie_voulue = self._voie.voie_gauche.liste_voiture
-            for vehicule in liste_voitures_voie_voulue:
+            liste_vehicules_voie_voulue = self._voie.voie_gauche.liste_vehicules
+            for vehicule in liste_vehicules_voie_voulue:
                 occupe = (vehicule.position > position_limite_arriere and \
                           vehicule.position < self._position) or \
                           (vehicule.position < position_limite_avant and \
@@ -138,12 +143,12 @@ class Vehicule(object):
                     libre = not(occupe)
             
             if libre:
-                liste_voitures_voie_initiale = self._voie.liste_voiture
+                liste_vehicules_voie_initiale = self._voie.liste_vehicules
                 self._voie = self._voie.voie_gauche
-                for voiture in liste_voitures_voie_initiale:
+                for voiture in liste_vehicules_voie_initiale:
                     if voiture.nom == self._nom:
-                        liste_voitures_voie_initiale.remove(voiture)
-                liste_voitures_voie_voulue.append(self)
+                        liste_vehicules_voie_initiale.remove(voiture)
+                liste_vehicules_voie_voulue.append(self)
                 depasse = True
                 
         return depasse
@@ -158,19 +163,19 @@ class Vehicule(object):
         voies concernees, et ne renvoie rien.
         """
         #s'il n'est ni sur la sortie, ni sur la voie de droite
-        if self._voie.id != -1 and self._voie.id != 0:
+        if self._voie.id_voie != -1 and self._voie.id_voie != 0:
             
             #s'il n'y a pas de voiture
             #HYP 0.6*vitesse_limite*coef
             distance_securite = 0.6 * d.vitesse_limite \
-                                * self._conducteur.coef_distance 
+                                * self._type_conducteur.coef_distance 
                                 
             position_limite_arriere = self._position - distance_securite
             position_limite_avant = self._position + distance_securite
             
             libre = True
-            liste_voitures_voie_voulue = self._voie.voie_droite.liste_voiture
-            for vehicule in liste_voitures_voie_voulue:
+            liste_vehicules_voie_voulue = self._voie.voie_droite.liste_vehicules
+            for vehicule in liste_vehicules_voie_voulue:
                 occupe = (vehicule.position > position_limite_arriere and \
                           vehicule.position < self._position) or \
                           (vehicule.position < position_limite_avant and \
@@ -179,12 +184,12 @@ class Vehicule(object):
                     libre = not(occupe)
                     
             if libre:
-                liste_voitures_voie_initiale = self._voie.liste_voiture
+                liste_vehicules_voie_initiale = self._voie.liste_vehicules
                 self._voie = self._voie.voie_droite
-                for voiture in liste_voitures_voie_initiale:
+                for voiture in liste_vehicules_voie_initiale:
                     if voiture.nom == self._nom:
-                        liste_voitures_voie_initiale.remove(voiture)
-                liste_voitures_voie_voulue.append(self)
+                        liste_vehicules_voie_initiale.remove(voiture)
+                liste_vehicules_voie_voulue.append(self)
 
     def tester_environnement(self):
         """
@@ -200,28 +205,29 @@ class Vehicule(object):
         voiture_proche = False
         
         #on considère tous les vehicules sur la même voie
-        liste_voitures = self._voie.liste_voiture
+        liste_vehicules = self._voie.liste_vehicules
                          
         #pour chaque vehicule                        
-        for vehicule in liste_voitures :
+        for vehicule in liste_vehicules :
             #si la distance au vehicule est inferieure a 70
             if vehicule.position - self._position < (0.6 * d.vitesse_limite \
-                * self._conducteur.coef_distance) \
+                * self._type_conducteur.coef_distance) \
                 and vehicule.position - self._position > 0:
                 #le vehicule est (strictement) devant lui  
                 voiture_proche = True
                 
         return voiture_proche
     
-    def prendre_la_sortie(self, sortie):
+    def prendre_la_sortie(self):
         """
-        Prend la sortie si bon metrage 
-        /!\ verifie pas la voie
+        Prend la sortie si bon metrage et voie 0
         Met a jour la voie et la liste de voitures de sortie
         """
-        if self._position > 600 and self._position < 730 and self.prendre_la_sortie:
-            self._voie = sortie
-            sortie.liste_voiture.append(self)
+        if self._voie.id_voie == 0:
+            if self._position > 600 and self._position < 730 and self.prendre_la_sortie:
+                self._voie.liste_vehicules.remove(self)
+                self._voie = self._voie.voie_droite
+                self._voie.liste_vehicules.append(self)
             
                                                   
 
@@ -238,7 +244,7 @@ class Voiture(Vehicule):
 class Moto(Vehicule):
     def __init__(self, nom, conducteur, vitesse, prend_la_sortie, voie):
         Vehicule.__init__(self, nom, conducteur, vitesse, prend_la_sortie, voie)
-        self.coef_vehicule = 0.9
+        self.coef_vehicule = 0.8
         
 class Poney(Vehicule):
     def __init__(self, nom, conducteur, vitesse, prend_la_sortie, voie):

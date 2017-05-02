@@ -66,7 +66,7 @@ def creer_un_vehicule(compteur_vehicules, liste_voie):
     vehi = p.PART_VEHICULE[d.ville][i-1][0](nom, conducteur, vitesse, prend_la_sortie, voie_vehi)
     
     #on met a jour la liste de voitures de la voie sur laquelle la voiture est creee
-    liste_voie[ind_voie].liste_voiture.append(vehi)
+    liste_voie[ind_voie].liste_vehicules.append(vehi)
               
     return vehi
 
@@ -81,7 +81,7 @@ def generer_les_vehicules(compteur_vehicules, liste_voie):
     for voie in liste_voie:
         voie.libre = True
         voie_occupee = 0
-        for vehi in voie.liste_voiture:
+        for vehi in voie.liste_vehicules:
 #COEF VEHI ?
             if vehi.position < 0.6*vehi.vitesse:
                 voie.libre = False
