@@ -80,13 +80,16 @@ class Vehicule(object):
             #temps = dist_min / dvitesse
             temps = dist_min / (self._vitesse/3.6)
             vit = self._vitesse
+            diff_vit = vitesse_cible - self._vitesse
             #num = (vitesse_cible - self._vitesse) / temps
             nouvelle_vitesse = ((vitesse_cible - self._vitesse) / (3.6*temps)) * d.pas + self._vitesse/3.6
             
             
             self._vitesse = nouvelle_vitesse*3.6
-            if nouvelle_vitesse < 0:
-                print("vehi {}: vit {}; tps {}; dist_min {}; vit_init {}".format(self._nom, nouvelle_vitesse, temps, dist_min, vit))
+            if self._nom == 10:
+                print("ralentit")
+            #if nouvelle_vitesse < 0:
+                #print("vehi {}: vit {};\ntps {};\ndist_min {};\ndiff_vit {};\nvit_init {};\n".format(self._nom, nouvelle_vitesse, temps, dist_min, diff_vit, vit))
         
         
          

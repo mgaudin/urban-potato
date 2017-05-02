@@ -28,7 +28,8 @@ while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicul
     
     
     for vehi in liste_voitures_circul:
-        
+        if vehi._nom == 10:
+            print(vehi.vitesse)
         vehi.serrer_droite()
         
         vehi.prendre_la_sortie()
