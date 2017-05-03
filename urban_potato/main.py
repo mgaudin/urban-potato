@@ -13,30 +13,34 @@ import data as d
 import create_lane
 import create_car
 
-import sortie_graphique as graph
+import sortie_graphique_enregitre_graph as graph
 
 (liste_voie, sortie) = create_lane.creer_voies(d.nb_voies)
-
+liste_vehicules_modelises = []
 liste_voitures_circul = []
 compteur_vehicules = 0
 instant = 0
+liste_sortie_manquee = []
 
 while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicules_voulu):
     if compteur_vehicules != d.nb_vehicules_voulu:
         (liste_vehicules_crees, compteur_vehicules) = create_car.generer_les_vehicules(compteur_vehicules, liste_voie)
         liste_voitures_circul = liste_voitures_circul + liste_vehicules_crees
-    
+        liste_vehicules_modelises = liste_vehicules_modelises  + liste_vehicules_crees
     
     for vehi in liste_voitures_circul:
-        if vehi._nom == 10:
-            print(vehi.vitesse)
+#        if vehi._nom == 10:
+#            print("vitesse",vehi.vitesse)
+        
+        
         vehi.serrer_droite()
         
         vehi.prendre_la_sortie()
         
         trop_proche = vehi.tester_environnement()
         if trop_proche:
-            depassement_reussi = vehi.depasser()
+            if not(vehi.prend_la_sortie):
+                depassement_reussi = vehi.depasser()
             if not depassement_reussi:
                 vehi.ralentir()
                 
@@ -45,6 +49,9 @@ while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicul
         vehi.maj_position()
 #POSITION NEGATIVE : VEHICULES RECULANT
         if vehi.position > 1200 or vehi.position < 0:
+            if vehi.prend_la_sortie and vehi.voie.id_voie != -1:
+                liste_sortie_manquee.append(vehi.nom)
+            vehi.voie.liste_vehicules.remove(vehi)
             #On eleve le vehicule des voitures circulant sur la route
             liste_voitures_circul.remove(vehi)
             #On supprime le vehicule
@@ -53,7 +60,11 @@ while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicul
     instant += d.pas
     #print(instant)
     #print(compteur_vehicules)
-    #graph.plot(liste_voitures_circul, instant)
+    graph.plot(liste_voitures_circul, instant)
     #print(liste_voitures_circul)
         
 print('hors')
+print(liste_sortie_manquee)
+
+if __name__ == '__main__':
+    pass

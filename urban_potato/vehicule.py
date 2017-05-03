@@ -21,14 +21,16 @@ class Vehicule(object):
         self._position = 0
         #objet voie
         self._voie = voie
+        #def dans fille
+        self._coef_vehicule = None
     
     @property
     def nom(self):
         return self._nom
     
     @property
-    def conducteur(self):
-        return self._conducteur
+    def type_conducteur(self):
+        return self._type_conducteur
     
     @property
     def position(self):
@@ -41,6 +43,18 @@ class Vehicule(object):
     @property
     def voie(self):
         return self._voie
+    @property
+    def prend_la_sortie(self):
+        return self._prend_la_sortie
+        
+    @property
+    def coef_vehicule(self):
+        return self._coef_vehicule
+    
+    
+    
+    
+    
         
     def maj_position(self):
         #vitesse en m/s
@@ -77,17 +91,25 @@ class Vehicule(object):
         
         #s'il faut ralentir
         if dvitesse > 0:
-            #temps = dist_min / dvitesse
-            temps = dist_min / (self._vitesse/3.6)
-            vit = self._vitesse
-            diff_vit = vitesse_cible - self._vitesse
-            #num = (vitesse_cible - self._vitesse) / temps
-            nouvelle_vitesse = ((vitesse_cible - self._vitesse) / (3.6*temps)) * d.pas + self._vitesse/3.6
-            
-            
-            self._vitesse = nouvelle_vitesse*3.6
-            if self._nom == 10:
-                print("ralentit")
+            if dist_min < 0.6 * self._vitesse:
+                vit = self._vitesse
+                self._vitesse = vitesse_cible
+#                if self._nom == 10:
+#                    print('urgence\n')
+                print("urgence vehi {}\ndistmin= {}\nvit_init= {}\nnouv_vit= {}\n".format(self._nom, dist_min, vit, self._vitesse))
+            else:
+                #temps = dist_min / dvitesse
+                temps = (dist_min - 0.6 * self._vitesse) / (self._vitesse/3.6) * self._coef_vehicule
+                vit = self._vitesse
+                diff_vit = vitesse_cible - self._vitesse
+                #num = (vitesse_cible - self._vitesse) / temps
+                nouvelle_vitesse = ((vitesse_cible - self._vitesse) / (3.6*temps)) * d.pas + self._vitesse/3.6
+                
+                
+                self._vitesse = nouvelle_vitesse*3.6
+#            if self._nom == 10:
+#                print("ralentit")
+            #print(dist_min)
             #if nouvelle_vitesse < 0:
                 #print("vehi {}: vit {};\ntps {};\ndist_min {};\ndiff_vit {};\nvit_init {};\n".format(self._nom, nouvelle_vitesse, temps, dist_min, diff_vit, vit))
         
@@ -129,7 +151,7 @@ class Vehicule(object):
             
             #s'il n'y a pas de voiture
             #HYP 0.6*vitesse_limite*coef
-            distance_securite = 0.6 * d.vitesse_limite \
+            distance_securite = 0.6 * 2 * d.vitesse_limite \
                                 * self._type_conducteur.coef_distance 
                                 
             position_limite_arriere = self._position - distance_securite
@@ -170,7 +192,7 @@ class Vehicule(object):
             
             #s'il n'y a pas de voiture
             #HYP 0.6*vitesse_limite*coef
-            distance_securite = 0.6 * d.vitesse_limite \
+            distance_securite = 0.6 * 2 * d.vitesse_limite \
                                 * self._type_conducteur.coef_distance 
                                 
             position_limite_arriere = self._position - distance_securite
@@ -189,9 +211,7 @@ class Vehicule(object):
             if libre:
                 liste_vehicules_voie_initiale = self._voie.liste_vehicules
                 self._voie = self._voie.voie_droite
-                for voiture in liste_vehicules_voie_initiale:
-                    if voiture.nom == self._nom:
-                        liste_vehicules_voie_initiale.remove(voiture)
+                liste_vehicules_voie_initiale.remove(self)
                 liste_vehicules_voie_voulue.append(self)
 
     def tester_environnement(self):
@@ -213,7 +233,7 @@ class Vehicule(object):
         #pour chaque vehicule                        
         for vehicule in liste_vehicules :
             #si la distance au vehicule est inferieure a 70
-            if vehicule.position - self._position < (0.6 * d.vitesse_limite \
+            if vehicule.position - self._position < (0.6 * 2 * d.vitesse_limite \
                 * self._type_conducteur.coef_distance) \
                 and vehicule.position - self._position > 0:
                 #le vehicule est (strictement) devant lui  
@@ -226,8 +246,27 @@ class Vehicule(object):
         Prend la sortie si bon metrage et voie 0
         Met a jour la voie et la liste de voitures de sortie
         """
-        if self._voie.id_voie == 0:
-            if self._position > 600 and self._position < 730 and self.prendre_la_sortie:
+
+        
+        
+        if self._voie.id_voie == 0 and \
+        self._position < 730 and self.prendre_la_sortie:
+            
+            position_devant = 1200
+            for vehi in self._voie.voie_droite.liste_vehicules:
+                if vehi.position < position_devant:
+                    position_devant = vehi.position
+                    vehicule_devant = vehi
+            distance_devant = position_devant - self.position
+                
+            if self._position < 600 and distance_devant < 2 * 0.6 * self._vitesse:
+                    vitesse_cible = vehicule_devant.vitesse
+                    temps = (distance_devant - 0.6 * self._vitesse) / (self._vitesse/3.6)
+                    nouvelle_vitesse = ((vitesse_cible - self._vitesse) / (3.6*temps)) * d.pas + self._vitesse/3.6
+                    
+                    self._vitesse = nouvelle_vitesse*3.6
+                
+            if self._position >= 600 and distance_devant > 0.6 * self._vitesse:
                 self._voie.liste_vehicules.remove(self)
                 self._voie = self._voie.voie_droite
                 self._voie.liste_vehicules.append(self)
@@ -237,19 +276,19 @@ class Vehicule(object):
 class Camion(Vehicule):
     def __init__(self, nom, conducteur, vitesse, prend_la_sortie, voie):
         Vehicule.__init__(self, nom, conducteur, vitesse, prend_la_sortie, voie)
-        self.coef_vehicule = 1.2
+        self._coef_vehicule = 1.1
 
 class Voiture(Vehicule):
     def __init__(self, nom, conducteur, vitesse, prend_la_sortie, voie):
         Vehicule.__init__(self, nom, conducteur, vitesse, prend_la_sortie, voie)
-        self.coef_vehicule = 1
+        self._coef_vehicule = 1
         
 class Moto(Vehicule):
     def __init__(self, nom, conducteur, vitesse, prend_la_sortie, voie):
         Vehicule.__init__(self, nom, conducteur, vitesse, prend_la_sortie, voie)
-        self.coef_vehicule = 0.8
+        self._coef_vehicule = 0.9
         
 class Poney(Vehicule):
     def __init__(self, nom, conducteur, vitesse, prend_la_sortie, voie):
         Vehicule.__init__(self, nom, conducteur, vitesse, prend_la_sortie, voie)
-        self.coef_vehicule = 0.4
+        self._coef_vehicule = 0.4

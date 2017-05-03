@@ -83,14 +83,14 @@ def generer_les_vehicules(compteur_vehicules, liste_voie):
         voie_occupee = 0
         for vehi in voie.liste_vehicules:
 #COEF VEHI ?
-            if vehi.position < 0.6*vehi.vitesse:
+            if vehi.position < 0.6*2*vehi.vitesse:
                 voie.libre = False
                 voie_occupee += 1
     
     nb_voies_dispo = d.nb_voies # - voie_occupee
     probabilite = d.debit * d.pas / nb_voies_dispo
-    if probabilite > 1:
-        probabilite = 1
+    if d.debit * d.pas > 1:
+        probabilite = 1 / nb_voies_dispo
         
     liste_vehicules_crees = []
     for voie in liste_voie:

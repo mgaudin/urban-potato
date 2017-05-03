@@ -15,4 +15,4 @@ pas = 0.5
 
 nb_vehicules_voulu = 20
 
-debit = 1
+debit = 0.5

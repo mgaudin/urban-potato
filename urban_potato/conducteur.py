@@ -21,5 +21,5 @@ class Normal(Conducteur):
         
 class Chauffard(Conducteur):
     def __init__(self):
-        self.coef_distance = 0.4
+        self.coef_distance = 0.8
         self.coef_vitesse = 1.1
