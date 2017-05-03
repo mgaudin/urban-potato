@@ -192,8 +192,8 @@ class Vehicule(object):
             
             #s'il n'y a pas de voiture
             #HYP 0.6*vitesse_limite*coef
-            distance_securite = 0.6 * 2 * d.vitesse_limite \
-                                * self._type_conducteur.coef_distance 
+            distance_securite = 0.6 * 2 * d.vitesse_limite
+            #distance_securite = distance_securite* self._type_conducteur.coef_distance 
                                 
             position_limite_arriere = self._position - distance_securite
             position_limite_avant = self._position + distance_securite

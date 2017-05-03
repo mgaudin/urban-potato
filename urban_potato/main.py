@@ -7,6 +7,7 @@ A. Gonnaud et MMM <3
 Mai 2017
 alice.gonnaud@ensg.eu
 """
+import os
 
 import data as d
 
@@ -14,6 +15,13 @@ import create_lane
 import create_car
 
 import sortie_graphique_enregitre_graph as graph
+
+#Repertoire images
+try:
+    os.mkdir('Graphes')
+except OSError:
+    for fichier in os.listdir('Graphes'):
+        os.remove('Graphes/' + fichier)
 
 (liste_voie, sortie) = create_lane.creer_voies(d.nb_voies)
 liste_vehicules_modelises = []
@@ -32,13 +40,15 @@ while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicul
 #        if vehi._nom == 10:
 #            print("vitesse",vehi.vitesse)
         
-        
-        vehi.serrer_droite()
+        #gestion ligne de dissuastion
+        if (vehi.prend_la_sortie and vehi.position < 400 and vehi.position > 800) or (vehi.prend_la_sortie and vehi.voie.id_voie != 1) or not(vehi.prend_la_sortie):
+            vehi.serrer_droite()
         
         vehi.prendre_la_sortie()
         
         trop_proche = vehi.tester_environnement()
         if trop_proche:
+            depassement_reussi = False
             if not(vehi.prend_la_sortie):
                 depassement_reussi = vehi.depasser()
             if not depassement_reussi:
@@ -60,7 +70,7 @@ while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicul
     instant += d.pas
     #print(instant)
     #print(compteur_vehicules)
-    graph.plot(liste_voitures_circul, instant)
+    #graph.plot(liste_voitures_circul, instant)
     #print(liste_voitures_circul)
         
 print('hors')
