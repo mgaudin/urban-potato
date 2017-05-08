@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar 29 16:30:47 2017
-
-@author: Alice
+Projet Informatique
+Gestion du trafic routier au niveau d'une sortie d'autoroute
+Classe Voie et sa classe fille Sortie
+Michael Gaudin et Alice Gonnaud
+Mai 2017
 """
 
 class Voie(object):
     def __init__(self, id_voie, voie_gauche, voie_droite, limite):
-        #entier unique, de 0 à nb_voies - 1
+        #entier unique, de 0 (voie de droite) à nb_voies - 1 (voie de gauche)
         self._id_voie = id_voie
-        #instances de la classe Voie
+        #instances de la classe Voie (ou None pour les voies exterieures)
         self._voie_gauche = voie_gauche
         self._voie_droite = voie_droite
         #liste d'objets de la classe Vehicule
@@ -73,6 +75,7 @@ class Voie(object):
 class Sortie(Voie):
     def __init__(self, id_voie, voie_gauche, voie_droite, limite):
         Voie.__init__(self, id_voie, voie_gauche, voie_droite, limite)
-        self._id = -1
+        #Sortie : voie particulière, dont l'id vaut toujours -1
+        self._id_voie = -1
         self._limite = 90
     

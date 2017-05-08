@@ -1,27 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar 29 16:03:53 2017
-
-@author: Alice
+Projet Informatique
+Gestion du trafic routier au niveau d'une sortie d'autoroute
+Classe Vehicule et classes en heritant
+Michael Gaudin et Alice Gonnaud
+Mai 2017
 """
 
 import ihm.data as d
 
 class Vehicule(object):
     def __init__(self, nom, conducteur, vitesse, prend_la_sortie, voie):
-        #entier unique
+        #Entier unique
         self._nom = nom
-        #objet de la classe conducteur
+        #Objet de la classe conducteur
         self._type_conducteur = conducteur
-        #vitesse instantanee en km/h
+        #Vitesse instantanee en km/h
         self._vitesse = vitesse
-        #booleen
+        #Booleen
         self._prend_la_sortie = prend_la_sortie
-        #flottant, en metre
+        #Flottant, en metre
         self._position = 0
-        #objet de la classe voie
+        #Objet de la classe voie
         self._voie = voie
-        #coefficient defini dans les classes filles
+        #Coefficient defini dans les classes filles
         self._coef_vehicule = None
     
     @property
@@ -64,11 +66,17 @@ class Vehicule(object):
         
         Cette methode modifie l'attribut position et ne retourne rien.
         """
-        #vitesse en m/s
+        #On convertit la vitesse du vehicule (km/h) en m/s
         vitesse = self._vitesse/3.6
-        #unite de temps = 0.5 s par defaut
+        
+        #Le pas, temps s'ecoulant entre deux instants, est exprime en s
+        #L'avance (en m) est la distance parcourue entre deux instants a la 
+        #vitesse du vehicule
         avance = vitesse * d.pas
+        
+        #Mise a jour de l'attribut position
         self._position += avance
+        
 
 #COMPORTEMENT SELON TYPE VEHICULE ?        
     def ralentir(self):
@@ -238,6 +246,7 @@ class Vehicule(object):
                           vehicule.position < self._position) or \
                           (vehicule.position < position_limite_avant and \
                           vehicule.position > self._position)
+                #Mise a jour du booleen
                 if occupe :
                     libre = not(occupe)
             
@@ -311,52 +320,76 @@ class Vehicule(object):
                  False sinon.
         :rtype: booleen
         """
-        #HYP dict
-        
-        voiture_proche = False
-        
-        #on considère tous les vehicules sur la même voie
-        liste_vehicules = self._voie.liste_vehicules
+        #Initialisation du booleen
+        vehicule_proche = False
                          
-        #pour chaque vehicule                        
-        for vehicule in liste_vehicules :
-            #si la distance au vehicule est inferieure a 70
+        #Pour chaque vehicule de la même voie                      
+        for vehicule in self._voie.liste_vehicules :
+            #Si la distance au vehicule est inferieure a deux fois la distance
+            #de securite (laisse le temps de depasser ou ralentir) et que le 
+            #vehicule est devant (strictement, exclut soi)
             if vehicule.position - self._position < (0.6 * 2 * d.vitesse_limite \
                 * self._type_conducteur.coef_distance) \
                 and vehicule.position - self._position > 0:
-                #le vehicule est (strictement) devant lui  
-                voiture_proche = True
+                #Le vehicule est trop proche
+                vehicule_proche = True
                 
-        return voiture_proche
+        return vehicule_proche
     
     def prendre_la_sortie(self):
         """
-        Prend la sortie si bon metrage et voie 0
-        Met a jour la voie et la liste de voitures de sortie
+        Methode permettant au vehicule de prendre la sortie, a condition qu'il
+        veuille la prendre, et qu'il soit sur la bonne voie (la plus a droite) 
+        et a la bonne position (en face de la sortie).
+        
+        Si le vehicule prend la sortie, cette methode met a jour la voie du 
+        vehicule sortant (attribut voie), et la liste de vehicules de la voie 
+        qu'il quitte (de droite) et qu'il joint (sortie). Sinon, elle ne 
+        modifie rien.
+        La methode ne renvoie rien.
         """
-
-        
-        
-        if self._voie.id_voie == 0 and \
-        self._position < 730 and self.prendre_la_sortie:
+        #Si le vehicule est sur la voie la plus a droite, qu'il est avant la 
+        #sortie et qu'il veut la prendre
+        if self._voie.id_voie == 0 and self._position < 730 and \
+        self.prendre_la_sortie:
             
+            #On verifie que la sortie est disponible
+            #On initialise la position du vehicule de devant a la position 
+            #maximale possible (traite le cas ou aucun vehicule n'est devant)
             position_devant = 1200
+            #Pour chaque vehicule de la sortie
             for vehi in self._voie.voie_droite.liste_vehicules:
+                #Si le vehicule est le premier de la voie (position minimale)
                 if vehi.position < position_devant:
+                    #Alors il est le vehicule de devant
                     position_devant = vehi.position
                     vehicule_devant = vehi
+            #On memorise la distance au vehicule de devant
             distance_devant = position_devant - self.position
                 
+            #Si le vehicule est en face de la sortie mais trop pres du vehicule
+            #de devant (qui deja dans la voie de la sortie)
             if self._position < 600 and distance_devant < 2 * 0.6 * self._vitesse:
+                    #Le vehicule ralentit pour ne pas manquer la sortie
                     vitesse_cible = vehicule_devant.vitesse
                     temps = (distance_devant - 0.6 * self._vitesse) / (self._vitesse/3.6)
                     nouvelle_vitesse = ((vitesse_cible - self._vitesse) / (3.6*temps)) * d.pas + self._vitesse/3.6
                     
                     self._vitesse = nouvelle_vitesse*3.6
-                
+            
+            #Si le vehicule est en face de la sortie et suffisamment loin du 
+            #vehicule de devant
+            #(NB : si le vehicule est en fait devant le premier vehicule de la
+            #sortie, distance_devant est negative, inferieure a la distance de 
+            #securite, et le vehicule ne peut pas sortir et se rabattre devant
+            #celui deja engage dans la sortie)
             if self._position >= 600 and distance_devant > 0.6 * self._vitesse:
+                #Le vehicule prend la sortie
+                #Mise a jour de la liste de vehicules de la voie quittee
                 self._voie.liste_vehicules.remove(self)
+                #Mise a jour de la voie du vehicule
                 self._voie = self._voie.voie_droite
+                #Mise a jur de liste de vehicules de la sortie
                 self._voie.liste_vehicules.append(self)
             
                                                   
@@ -379,4 +412,4 @@ class Moto(Vehicule):
 class Poney(Vehicule):
     def __init__(self, nom, conducteur, vitesse, prend_la_sortie, voie):
         Vehicule.__init__(self, nom, conducteur, vitesse, prend_la_sortie, voie)
-        self._coef_vehicule = 0.4
+        self._coef_vehicule = 0.6
