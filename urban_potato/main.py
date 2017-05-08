@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Projet Informatique
-Gestion de trafic routier
+Gestion du trafic routier au niveau d'une sortie d'autoroute
 Programme principal
-A. Gonnaud et MMM <3
+Michael Gaudin et Alice Gonnaud
 Mai 2017
-alice.gonnaud@ensg.eu
 """
 import os
 
@@ -29,8 +28,9 @@ liste_voitures_circul = []
 compteur_vehicules = 0
 instant = 0
 liste_sortie_manquee = []
+vehicule_hors = []
 
-while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicules_voulu):
+while not(len(vehicule_hors) == d.nb_vehicules_voulu): #and compteur_vehicules == d.nb_vehicules_voulu):
     if compteur_vehicules != d.nb_vehicules_voulu:
         (liste_vehicules_crees, compteur_vehicules) = cvehi.generer_les_vehicules(compteur_vehicules, liste_voie)
         liste_voitures_circul = liste_voitures_circul + liste_vehicules_crees
@@ -40,7 +40,7 @@ while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicul
 #        if vehi._nom == 10:
 #            print("vitesse",vehi.vitesse)
         
-        #gestion ligne de dissuastion
+        #gestion ligne de dissuasion
         if (vehi.prend_la_sortie and vehi.position < 400 and vehi.position > 800) or (vehi.prend_la_sortie and vehi.voie.id_voie != 1) or not(vehi.prend_la_sortie):
             vehi.serrer_droite()
         
@@ -57,20 +57,26 @@ while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicul
         else:
             vehi.accelerer()
         vehi.maj_position()
-#POSITION NEGATIVE : VEHICULES RECULANT
-        if vehi.position > 1200 or vehi.position < 0:
-            if vehi.prend_la_sortie and vehi.voie.id_voie != -1:
+
+        if vehi.position > 1200 and vehi not in vehicule_hors:
+            vehicule_hors.append(vehi)
+
+        if vehi.position > 1500:
+#a passer en commentaire     
+            if vehi.prend_la_sortie and vehi.voie.id_voie != -1:           
                 liste_sortie_manquee.append(vehi.nom)
+                
+            #On enleve le vehicule de la liste de vehicules de sa voie
             vehi.voie.liste_vehicules.remove(vehi)
-            #On eleve le vehicule des voitures circulant sur la route
+            #On enleve le vehicule des voitures circulant sur la route
             liste_voitures_circul.remove(vehi)
             #On supprime le vehicule
             del(vehi)
                   
     instant += d.pas
-    #print(instant)
+    print(instant)
     #print(compteur_vehicules)
-    #graph.plot(liste_voitures_circul, instant)
+    graph.plot(liste_voitures_circul, instant)
     #print(liste_voitures_circul)
         
 print('hors')

@@ -12,18 +12,18 @@ Created on Wed Apr 26 09:07:01 2017
 @author: Alice
 """
 
-import vehicule as v
-import parametre as p
-import data as d
+import classes.vehicule as v
+import initialisation.parametre as p
+import ihm.data as d
 from random import *
 
-ville = d.ville
+ville = d.scenario
 liste_voiture_cree = []
 compteur_vehicules = 0
 
 #voie
 #CREATE LANE
-import voie
+import classes.voie
 
 nb_voie = 3
 

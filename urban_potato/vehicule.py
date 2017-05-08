@@ -138,12 +138,14 @@ class Vehicule(object):
             #Si on suit le vehicule de moins de la distance de securite, on 
             #opère un freinage d'urgence
             if dist_min < 0.6 * self._vitesse:
-#                vit = self._vitesse
+#
+                vit = self._vitesse
                 #Le vehicule prend la vitesse du vehicule de devant
                 self._vitesse = vitesse_cible
 #                if self._nom == 10:
 #                    print('urgence\n')
-#                print("urgence vehi {}\ndistmin= {}\nvit_init= {}\nnouv_vit= {}\n".format(self._nom, dist_min, vit, self._vitesse))
+#
+                print("urgence vehi {}\ndistmin= {}\nvit_init= {}\nnouv_vit= {}\n".format(self._nom, dist_min, vit, self._vitesse))
             #Si le vehicule de devant est distant d'au moins la distance de 
             #securite
             else:
@@ -351,7 +353,7 @@ class Vehicule(object):
         #Si le vehicule est sur la voie la plus a droite, qu'il est avant la 
         #sortie et qu'il veut la prendre
         if self._voie.id_voie == 0 and self._position < 730 and \
-        self.prendre_la_sortie:
+        self._prend_la_sortie:
             
             #On verifie que la sortie est disponible
             #On initialise la position du vehicule de devant a la position 
@@ -391,6 +393,7 @@ class Vehicule(object):
                 self._voie = self._voie.voie_droite
                 #Mise a jur de liste de vehicules de la sortie
                 self._voie.liste_vehicules.append(self)
+                print('id {}, sortie {}'.format(self._nom, self._prend_la_sortie))
             
                                                   
 
