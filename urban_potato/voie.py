@@ -62,7 +62,6 @@ class Voie(object):
         self._libre = valeur
         
     
-#ERROR 'liste_vehicules' is not defined
     def __str__(self):
         """
         Affiche le numero, la liste des numeros des vehicules et la limitation
