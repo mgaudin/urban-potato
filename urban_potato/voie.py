@@ -7,11 +7,16 @@ Created on Wed Mar 29 16:30:47 2017
 
 class Voie(object):
     def __init__(self, id_voie, voie_gauche, voie_droite, limite):
+        #entier unique, de 0 à nb_voies - 1
         self._id_voie = id_voie
+        #instances de la classe Voie
         self._voie_gauche = voie_gauche
         self._voie_droite = voie_droite
+        #liste d'objets de la classe Vehicule
         self._liste_vehicules = []
+        #entier
         self._limite = limite
+        #booleen
         self._libre = True
         
     @property
@@ -55,10 +60,15 @@ class Voie(object):
         self._libre = valeur
         
     
-    
-        
+#ERROR 'liste_vehicules' is not defined
     def __str__(self):
-        return "id = {}\nliste_voiture = {}\nlimite = {}".format(self.id, self.liste_voiture, self.limite)
+        """
+        Affiche le numero, la liste des numeros des vehicules et la limitation
+        de vitesse de la voie.
+        """
+        liste_nom_vehicules = [vehi.nom for vehi in self._liste_vehicules]
+        return "id = {}\nliste_vehicules = {}\nlimite = {}".format(self.id_voie, liste_nom_vehicules, self.limite)
+  
     
 class Sortie(Voie):
     def __init__(self, id_voie, voie_gauche, voie_droite, limite):

@@ -5,23 +5,23 @@ Created on Wed Mar 29 16:03:53 2017
 @author: Alice
 """
 
-import data as d
+import ihm.data as d
 
 class Vehicule(object):
     def __init__(self, nom, conducteur, vitesse, prend_la_sortie, voie):
         #entier unique
         self._nom = nom
-        #objet conducteur (script conducteur)
+        #objet de la classe conducteur
         self._type_conducteur = conducteur
-        #en km/h
+        #vitesse instantanee en km/h
         self._vitesse = vitesse
         #booleen
         self._prend_la_sortie = prend_la_sortie
-        #en m
+        #flottant, en metre
         self._position = 0
-        #objet voie
+        #objet de la classe voie
         self._voie = voie
-        #def dans fille
+        #coefficient defini dans les classes filles
         self._coef_vehicule = None
     
     @property
@@ -57,6 +57,13 @@ class Vehicule(object):
     
         
     def maj_position(self):
+        """
+        Methode permettant de mettre a jour l'attribut position du vehicule, en 
+        ajoutant a sa position la distance parcourue par le vehicule depuis 
+        l'instant precedant, en fonction de sa vitesse instantanee.
+        
+        Cette methode modifie l'attribut position et ne retourne rien.
+        """
         #vitesse en m/s
         vitesse = self._vitesse/3.6
         #unite de temps = 0.5 s par defaut
@@ -67,71 +74,122 @@ class Vehicule(object):
     def ralentir(self):
         """
         /!\ ALERT /!\ : LA VOITURE ET LA CIBLE DOIVENT ETRE SUR LE MEME TRONCON
+        
+        Methode permettant au vehicule de ralentir.
+        
+        On adopte un modele de ralentissement lineaire, defini a chaque instant
+        par la distance separant le vehicule de celui qu'il suit et leur 
+        differentiel de vitesse.
+        Tant que le vehicule est distant du vehicule qu'il suit de plus de la 
+        distance de securite, il relentit lineairement, visant atteindre la 
+        vitesse du vehicule qu'il suit au moment ou il sera distant de lui de 
+        la distance de securite.
+        S'il est plus proche du vehicule de devant que la distance de securite,
+        on effectue un ralentissement d'urgence : le vehicule prend la vitesse 
+        de celui devant lui.
+        
+        Cette methode modifie l'attribut vitesse et ne retourne rien.
         """
-        #on considère tous les vehicules sur la même voie
+        #On cherche le vehicule de devant, pour calculer la distance separant
+        #de lui et determiner sa vitesse.
+        
+        #On s'interesse aux vehicules de la meme voie
         liste_vehicules = self._voie.liste_vehicules
         
+        #On cherche le vehicule immediatement devant, ie a la distance positive
+        #minimale
+
+        #On initialise en prenant un vehicule devant et en calculant sa distance
+        #On considere le premier vehicule de la liste de la voie
         i=0                           
         dist_min = liste_vehicules[0].position - self._position
         vehicule_devant = liste_vehicules[0]
+        #Si ce vehicule n'est pas devant, on parcourt tous les vehicules de la 
+        #voie et on cherche le premier vehicule qui l'est
         while dist_min < 0:
             i = i+1
             dist_min = liste_vehicules[i].position - self._position
+        
+        #On parcourt tous les vehicules sur la même voie
         for vehicule in liste_vehicules:
+            #On calcule la distance a laquelle ils sont
             distance = vehicule.position - self._position
+            #On retient la distance minimale positive, et le vehicule concerne
             if distance < dist_min and distance > 0:
                 dist_min = distance
                 vehicule_devant = vehicule
             
-            
+        #On memorise la vitesse du vehicule de devant
         vitesse_cible = vehicule_devant.vitesse
         
-        #differentiel de vitesse
+        #On calcule le differentiel de vitesse avec ce vehicule
         dvitesse = self._vitesse - vitesse_cible
         
-        #s'il faut ralentir
+        #S'il est plus lent, on ralentit
         if dvitesse > 0:
+            #Si on suit le vehicule de moins de la distance de securite, on 
+            #opère un freinage d'urgence
             if dist_min < 0.6 * self._vitesse:
-                vit = self._vitesse
+#                vit = self._vitesse
+                #Le vehicule prend la vitesse du vehicule de devant
                 self._vitesse = vitesse_cible
 #                if self._nom == 10:
 #                    print('urgence\n')
-                print("urgence vehi {}\ndistmin= {}\nvit_init= {}\nnouv_vit= {}\n".format(self._nom, dist_min, vit, self._vitesse))
+#                print("urgence vehi {}\ndistmin= {}\nvit_init= {}\nnouv_vit= {}\n".format(self._nom, dist_min, vit, self._vitesse))
+            #Si le vehicule de devant est distant d'au moins la distance de 
+            #securite
             else:
-                #temps = dist_min / dvitesse
+                #On calcule le temps (en secondes) qu'il faudrait pour suivre
+                #la voiture de devant a exactement la distance de securite, 
+                #si on maintenait la meme allure (pondere par le coefficient du 
+                #vehicule, en facteur, qui accentue ou aplanit la pente du 
+                #modele lineaire de ralentissement : un vehicule moins agile
+                #ralentira moins vivement)
                 temps = (dist_min - 0.6 * self._vitesse) / (self._vitesse/3.6) * self._coef_vehicule
-                vit = self._vitesse
-                diff_vit = vitesse_cible - self._vitesse
-                #num = (vitesse_cible - self._vitesse) / temps
+                #La nouvelle vitesse suit la pente du differentiel de vitesse
+                #en fonction du temps (ponderee par le coefficient du vehicule),
+                #calculee pour l'instant suivant (en m/s)
                 nouvelle_vitesse = ((vitesse_cible - self._vitesse) / (3.6*temps)) * d.pas + self._vitesse/3.6
                 
-                
+                #On renvoie la nouvelle vitesse en km/h
                 self._vitesse = nouvelle_vitesse*3.6
 #            if self._nom == 10:
 #                print("ralentit")
-            #print(dist_min)
-            #if nouvelle_vitesse < 0:
-                #print("vehi {}: vit {};\ntps {};\ndist_min {};\ndiff_vit {};\nvit_init {};\n".format(self._nom, nouvelle_vitesse, temps, dist_min, diff_vit, vit))
+#            print(dist_min)
+#            if nouvelle_vitesse < 0:
+#                print("vehi {}: vit {};\ntps {};\ndist_min {};\ndiff_vit {};\nvit_init {};\n".format(self._nom, nouvelle_vitesse, temps, dist_min, diff_vit, vit))
         
         
          
     def accelerer(self):
         """
+        Methode permettant au vehicule d'accelerer.
+        On considere qu'il gagne 2km/h par seconde.
+        
+        Cette methode modifie l'attribut vitesse et ne retourne rien.
         """
-        #limite a laquelle la voiture est prete a rouler, en fonction de la 
-        #limitation de vitesse de l'autoroute du modele vitesse_limite et du 
-        #type de conducteur
+        #Le vehicule ne depasse pas sa vitesse limite qui est la limitation de 
+        #vitesse de l'autoroute ponderee par le coefficient vitesse propre au 
+        #type de conducteur (un conducteur plus imprudent depassera la 
+        #limitation de vitesse de l'autoroute)
         limite = self._type_conducteur.coef_vitesse * d.vitesse_limite
         
+        #Calcul de l'ecart de la vitesse a la limite
         dvitesse = limite - self._vitesse
         
-        #HYP : accélération de 2km/h par seconde
-        if dvitesse >= (2/3.6)*d.pas:
-            nouvelle_vitesse  = self._vitesse + (2/3.6)*d.pas
-        if dvitesse < (2/3.6)*d.pas:  #and dvitesse > 0
-            nouvelle_vitesse  = limite
+        #Si le vehicule ne depasse pas la limite en accelerant
+        if dvitesse >= (2*d.pas):
+            #Hypothese du modele : acceleration de 2km/h par seconde 
+            nouvelle_vitesse = self._vitesse + 2*d.pas
+        else:  
+            #S'il risque de depasser en accelerant de 2km/h, il accelere a la 
+            #limite
+            nouvelle_vitesse = limite
                 
+        #L'attribut vitesse est mis a jour
         self._vitesse = nouvelle_vitesse                               
+    
+    
     
     def depasser(self):
         """
@@ -139,27 +197,43 @@ class Vehicule(object):
         change la voiture de voie.
         Elle modifie la voie de la voiture, et la liste de voitures des voies
         concernees par le depassement.
+        
         Le methode renvoie un booleen indiquant si le depassement s'est fait.
         
-
         :return: True si le depassement s'est fait, False sinon
         :rtype: booleen
         """
+        #On initialise le booleen indiquant si le depassement s'est fait
         depasse = False
-        #s'il n'est ni sur la sortie, ni sur la voie de gauche
+        
+        #Si le vehicule n'est ni sur la sortie, ni sur la voie la plus a gauche
         if self._voie.id_voie != -1 and self._voie.id_voie != d.nb_voies - 1:
             
-            #s'il n'y a pas de voiture
-            #HYP 0.6*vitesse_limite*coef
+            #On regarde s'il y a des voitures voie de gauche, devant ou 
+            #arrivant derriere a moins de deux fois la distance de securite 
+            #(laisse le temps au vehicule de derriere de ralenir s'il est plus
+            #rapide)
+            #La distance de securite est 0.6*vitesse (code de la route) 
+            #ponderee par le coefficient distance du type de conducteur 
+            #(distance plus courte pour les conducteurs moins prudents)
+#self.vitesse ?
             distance_securite = 0.6 * 2 * d.vitesse_limite \
                                 * self._type_conducteur.coef_distance 
-                                
+            
+            #On definit l'intervalle des positions qui ne doit pas comprendre
+            #de vehicules pour autoriser le depassement
+            #Position maximale du vehicule derriere soi
             position_limite_arriere = self._position - distance_securite
+            #Position minimale du vehicule devant soi
             position_limite_avant = self._position + distance_securite
             
+            #On teste si la voie de gauche est libre
+            #Initialisation du booleen
             libre = True
-            liste_vehicules_voie_voulue = self._voie.voie_gauche.liste_vehicules
-            for vehicule in liste_vehicules_voie_voulue:
+            #On parcourt les vehicules de la voie de gauche
+            for vehicule in self._voie.voie_gauche.liste_vehicules:
+                #La voie est occupee si un vehicule se trouve sur cette voie, 
+                #dans l'intervalle des positions defini plus haut
                 occupe = (vehicule.position > position_limite_arriere and \
                           vehicule.position < self._position) or \
                           (vehicule.position < position_limite_avant and \
@@ -167,40 +241,51 @@ class Vehicule(object):
                 if occupe :
                     libre = not(occupe)
             
+            #Si la voie est libre, on depasse
             if libre:
-                liste_vehicules_voie_initiale = self._voie.liste_vehicules
+                #On supprime le vehicule de la voie quittee
+                self._voie.liste_vehicules.remove(self)
+                #On change de voie (mise a jour de l'attribut voie du vehicule)
                 self._voie = self._voie.voie_gauche
-                for voiture in liste_vehicules_voie_initiale:
-                    if voiture.nom == self._nom:
-                        liste_vehicules_voie_initiale.remove(voiture)
-                liste_vehicules_voie_voulue.append(self)
-                depasse = True
+                #On ajoute le vehicule a la voie de gauche
+                self._voie.liste_vehicules.append(self)
                 
+                #On indique que le depassement s'est effectue
+                depasse = True
+        
+        #On retourne si le depassement s'est fait ou non
         return depasse
     
               
 
     def serrer_droite(self):
         """
-        Methode testant si la voiture a la place de se rabattre a droite, et si
-        oui, la change de voie.
+        Methode testant si le vehicule a la place de se rabattre a droite, et 
+        si oui, le change de voie.
+        
         La methode modifie la voie de la voiture, et la liste de voitures des 
         voies concernees, et ne renvoie rien.
         """
-        #s'il n'est ni sur la sortie, ni sur la voie de droite
+#NB: Methode similaire a depasser()
+        
+        #Si le vehicule n'est ni sur la sortie, ni sur la voie la plus a droite
         if self._voie.id_voie != -1 and self._voie.id_voie != 0:
             
-            #s'il n'y a pas de voiture
-            #HYP 0.6*vitesse_limite*coef
+            
+            #On definit l'intervalle de position dans lequel aucun vehicule ne
+            #doit se trouver pour pouvoir se rabattre a droite
+#self.vitesse ?
             distance_securite = 0.6 * 2 * d.vitesse_limite
+#coef conducteur ?
             #distance_securite = distance_securite* self._type_conducteur.coef_distance 
                                 
             position_limite_arriere = self._position - distance_securite
             position_limite_avant = self._position + distance_securite
             
+            #On teste si la voie de droite est disponible
             libre = True
-            liste_vehicules_voie_voulue = self._voie.voie_droite.liste_vehicules
-            for vehicule in liste_vehicules_voie_voulue:
+            
+            for vehicule in self._voie.voie_droite.liste_vehicules:
                 occupe = (vehicule.position > position_limite_arriere and \
                           vehicule.position < self._position) or \
                           (vehicule.position < position_limite_avant and \
@@ -208,11 +293,14 @@ class Vehicule(object):
                 if occupe :
                     libre = not(occupe)
                     
+            #Si la voie de droite est disponible, on change le vehicule de voie      
             if libre:
-                liste_vehicules_voie_initiale = self._voie.liste_vehicules
+                #On met a jour la liste de vehicules de la voie quittee
+                self._voie.liste_vehicules.remove(self)
+                #On met a jour l'attribut voie du véhicule
                 self._voie = self._voie.voie_droite
-                liste_vehicules_voie_initiale.remove(self)
-                liste_vehicules_voie_voulue.append(self)
+                #On met a jour la liste de vehicules de la voie prise
+                self._voie.liste_vehicules.append(self)
 
     def tester_environnement(self):
         """

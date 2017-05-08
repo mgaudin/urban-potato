@@ -9,10 +9,10 @@ alice.gonnaud@ensg.eu
 """
 import os
 
-import data as d
+import ihm.data as d
 
-import create_lane
-import create_car
+import initialisation.creer_voie as cvoie
+import initialisation.creer_vehicule as cvehi
 
 import sortie_graphique_enregitre_graph as graph
 
@@ -23,7 +23,7 @@ except OSError:
     for fichier in os.listdir('Graphes'):
         os.remove('Graphes/' + fichier)
 
-(liste_voie, sortie) = create_lane.creer_voies(d.nb_voies)
+(liste_voie, sortie) = cvoie.creer_voies(d.nb_voies)
 liste_vehicules_modelises = []
 liste_voitures_circul = []
 compteur_vehicules = 0
@@ -32,7 +32,7 @@ liste_sortie_manquee = []
 
 while not(len(liste_voitures_circul) == 0 and compteur_vehicules == d.nb_vehicules_voulu):
     if compteur_vehicules != d.nb_vehicules_voulu:
-        (liste_vehicules_crees, compteur_vehicules) = create_car.generer_les_vehicules(compteur_vehicules, liste_voie)
+        (liste_vehicules_crees, compteur_vehicules) = cvehi.generer_les_vehicules(compteur_vehicules, liste_voie)
         liste_voitures_circul = liste_voitures_circul + liste_vehicules_crees
         liste_vehicules_modelises = liste_vehicules_modelises  + liste_vehicules_crees
     

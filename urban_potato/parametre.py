@@ -4,8 +4,8 @@ Created on Wed Apr 19 11:51:25 2017
 
 @author: Alice
 """
-import conducteur as c
-import vehicule as v
+import classes.conducteur as c
+import classes.vehicule as v
 
 prudent = c.Prudent()
 normal = c.Normal()
