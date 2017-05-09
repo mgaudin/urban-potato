@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr 19 11:51:25 2017
-
-@author: Alice
+Projet Informatique
+Gestion du trafic routier au niveau d'une sortie d'autoroute
+Repartition selon le scenario
+Michael Gaudin et Alice Gonnaud
+Mai 2017
 """
+
 import classes.conducteur as c
 import classes.vehicule as v
 

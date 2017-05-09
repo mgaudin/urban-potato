@@ -18,6 +18,9 @@ def creer_voies(nb_voie, vitesse_limite):
     La methode retourne les voies creees.
     
     :param nb_voie: nombre de voies a creer
+    :param vitesse_limite: limitation de vitesse sur l'autoroute (parametre 
+                           general de la modelisation)
+
     :return: (liste des voies, sortie)
     :rtype : couple (liste d'objets voie, objet sortie)
     """

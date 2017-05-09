@@ -27,7 +27,14 @@ def creer_un_vehicule(compteur_vehicules, voie, scenario, nb_voies, vitesse_limi
     :param compteur_vehicules: nombre de vehicules deja crees, sert a definir
                                l'id du vehicule
     :param voie: instance de la classe Voie, sur laquelle le vehicule est cree
-   
+    :param scenario: definit les proportions de types de vehicules et de 
+                     conducteurs du modele (parametre general de la 
+                     modelisation)
+    :param nb_voies: nombre de voies de l'autoroute (en plus de la sortie) 
+                     (parametre general de la modelisation)
+    :param vitesse_limite: limitation de vitesse sur l'autoroute (parametre 
+                           general de la modelisation)    
+        
     :return: instance creee de la classe Vehicule
     :rtype: objet vehicule
     """
@@ -100,6 +107,20 @@ def generer_les_vehicules(compteur_vehicules, liste_voie, pas, debit, nb_vehicul
     :param compteur_vehicules: nombre de vehicules deja crees au cours de la
                                modelisation
     :param liste_voie: liste des objets voie de la modelisation
+    :param pas: duree separant deux instants modelises (en seconde) 
+                (parametre general de la modelisation)
+    :param debit: debit de vehicules en entree du troncon modelise (en nombre 
+                  de vehicules par seconde) (parametre general de la 
+                  modelisation)
+    :param nb_vehicules_voulu: nombre de vehicules circulant a modeliser 
+                               (parametre general de la modelisation)
+    :param scenario: definit les proportions de types de vehicules et de 
+                     conducteurs du modele (parametre general de la 
+                     modelisation)
+    :param nb_voies: nombre de voies de l'autoroute (en plus de la sortie) 
+                     (parametre general de la modelisation)
+    :param vitesse_limite: limitation de vitesse sur l'autoroute (parametre 
+                           general de la modelisation)
     
     :return: (liste des vehicules crees, compteur_vehicules mis a jour)
     :rtype: couple (liste d'objets Vehicule, entier)

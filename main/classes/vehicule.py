@@ -65,6 +65,8 @@ class Vehicule(object):
         l'instant precedant, en fonction de sa vitesse instantanee.
         
         Cette methode modifie l'attribut position et ne retourne rien.
+        :param pas: duree separant deux instants modelises (en seconde) 
+                    (parametre general de la modelisation)
         """
         #On convertit la vitesse du vehicule (km/h) en m/s
         vitesse = self._vitesse/3.6
@@ -77,12 +79,10 @@ class Vehicule(object):
         #Mise a jour de l'attribut position
         self._position += avance
         
-
-#COMPORTEMENT SELON TYPE VEHICULE ?        
-    def ralentir(self, pas):
-        """
-        /!\ ALERT /!\ : LA VOITURE ET LA CIBLE DOIVENT ETRE SUR LE MEME TRONCON
         
+     
+    def ralentir(self, pas):
+        """        
         Methode permettant au vehicule de ralentir.
         
         On adopte un modele de ralentissement lineaire, defini a chaque instant
@@ -97,6 +97,9 @@ class Vehicule(object):
         de celui devant lui.
         
         Cette methode modifie l'attribut vitesse et ne retourne rien.
+        
+        :param pas: duree separant deux instants modelises (en seconde) 
+                    (parametre general de la modelisation)
         """
         #On cherche le vehicule de devant, pour calculer la distance separant
         #de lui et determiner sa vitesse.
@@ -135,8 +138,9 @@ class Vehicule(object):
         
         #S'il est plus lent, on ralentit
         if dvitesse > 0:
-            #Si on suit le vehicule de moins de la distance de securite, on 
-            #opère un freinage d'urgence
+            #Si on suit le vehicule de moins de la distance de securite 
+            #(0.6*vitesse d'apres le Code de la route), on opère un freinage 
+            #d'urgence
             if dist_min < 0.6 * self._vitesse:
                 #Le vehicule prend la vitesse du vehicule de devant
                 self._vitesse = vitesse_cible
@@ -154,10 +158,11 @@ class Vehicule(object):
                 #La nouvelle vitesse suit la pente du differentiel de vitesse
                 #en fonction du temps (ponderee par le coefficient du vehicule),
                 #calculee pour l'instant suivant (en m/s)
-                nouvelle_vitesse = ((vitesse_cible - self._vitesse) / (3.6*temps)) * pas + self._vitesse/3.6
+                nouvelle_vitesse = (((vitesse_cible - self._vitesse)/3.6) / temps) * pas + self._vitesse/3.6
                 
                 #On renvoie la nouvelle vitesse en km/h
                 self._vitesse = nouvelle_vitesse*3.6      
+        
         
          
     def accelerer(self, vitesse_limite, pas):
@@ -166,6 +171,11 @@ class Vehicule(object):
         On considere qu'il gagne 2km/h par seconde.
         
         Cette methode modifie l'attribut vitesse et ne retourne rien.
+        
+        :param vitesse_limite: limitation de vitesse sur l'autoroute 
+                               (parametre general de la modelisation)
+        :param pas: duree separant deux instants modelises (en seconde) 
+                    (parametre general de la modelisation)
         """
         #Le vehicule ne depasse pas sa vitesse limite qui est la limitation de 
         #vitesse de l'autoroute ponderee par le coefficient vitesse propre au 
@@ -199,6 +209,9 @@ class Vehicule(object):
         
         Le methode renvoie un booleen indiquant si le depassement s'est fait.
         
+        :param nb_voies: nombre de voies de l'autoroute (en plus de la sortie) 
+                         (parametre general de la modelisation)
+        
         :return: True si le depassement s'est fait, False sinon
         :rtype: booleen
         """
@@ -212,12 +225,8 @@ class Vehicule(object):
             #arrivant derriere a moins de deux fois la distance de securite 
             #(laisse le temps au vehicule de derriere de ralenir s'il est plus
             #rapide)
-            #La distance de securite est 0.6*vitesse (code de la route) 
-            #ponderee par le coefficient distance du type de conducteur 
-            #(distance plus courte pour les conducteurs moins prudents)
-#self.vitesse ?
-            distance_securite = 0.6 * 2 * self._vitesse \
-                                * self._type_conducteur.coef_distance 
+            #La distance de securite est 0.6*vitesse (code de la route)
+            distance_securite = 0.6 * 2 * self._vitesse
             
             #On definit l'intervalle des positions qui ne doit pas comprendre
             #de vehicules pour autoriser le depassement
@@ -274,10 +283,7 @@ class Vehicule(object):
             
             #On definit l'intervalle de position dans lequel aucun vehicule ne
             #doit se trouver pour pouvoir se rabattre a droite
-#self.vitesse ?
             distance_securite = 0.6 * 2 * self._vitesse
-#coef conducteur ?
-            #distance_securite = distance_securite* self._type_conducteur.coef_distance 
                                 
             position_limite_arriere = self._position - distance_securite
             position_limite_avant = self._position + distance_securite
@@ -301,6 +307,8 @@ class Vehicule(object):
                 self._voie = self._voie.voie_droite
                 #On met a jour la liste de vehicules de la voie prise
                 self._voie.liste_vehicules.append(self)
+                
+                
 
     def tester_environnement(self):
         """
@@ -319,6 +327,9 @@ class Vehicule(object):
             #Si la distance au vehicule est inferieure a deux fois la distance
             #de securite (laisse le temps de depasser ou ralentir) et que le 
             #vehicule est devant (strictement, exclut soi)
+            #L'appreciation de la distance de securite est ponderee par le 
+            #coefficient distance du type de conducteur (un conducteur plus 
+            #prudent laissera plus de distance)
             if vehicule.position - self._position < (0.6 * 2 * self._vitesse \
                 * self._type_conducteur.coef_distance) \
                 and vehicule.position - self._position > 0:
@@ -326,6 +337,8 @@ class Vehicule(object):
                 vehicule_proche = True
                 
         return vehicule_proche
+    
+    
     
     def prendre_la_sortie(self, pas):
         """
@@ -338,6 +351,9 @@ class Vehicule(object):
         qu'il quitte (de droite) et qu'il joint (sortie). Sinon, elle ne 
         modifie rien.
         La methode ne renvoie rien.
+        
+        :param pas: duree separant deux instants modelises (en seconde) 
+                    (parametre general de la modelisation)
         """
         #Si le vehicule est sur la voie la plus a droite, qu'il est avant la 
         #sortie et qu'il veut la prendre
